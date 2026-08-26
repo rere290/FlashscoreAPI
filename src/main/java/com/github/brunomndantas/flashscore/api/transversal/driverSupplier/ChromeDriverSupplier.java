@@ -28,10 +28,15 @@ public class ChromeDriverSupplier extends DriverSupplier {
         ChromeOptions options = new ChromeOptions();
 
         /*
-         * Sur Railway, le ChromeDriver est généralement
-         * déjà disponible dans l'environnement.
+         * ============================================================
+         * CHROMEDRIVER
+         * ============================================================
          *
-         * On utilise driver.path uniquement s'il est réellement fourni.
+         * On utilise le chemin fourni par la configuration uniquement
+         * lorsqu'il existe réellement.
+         *
+         * Sur Railway, ChromeDriver peut déjà être disponible dans
+         * l'environnement.
          */
         if (this.driverPath != null
                 && !this.driverPath.trim().isEmpty()) {
@@ -50,57 +55,103 @@ public class ChromeDriverSupplier extends DriverSupplier {
         );
 
         /*
-         * Headless obligatoire sur Railway/Linux.
+         * ============================================================
+         * MODE HEADLESS
+         * ============================================================
+         *
+         * Railway fonctionne sans interface graphique.
          */
         if (this.headless) {
             options.addArguments("--headless=new");
         }
 
         /*
-         * Options indispensables pour un environnement
-         * Linux/Docker/Railway.
+         * ============================================================
+         * RAILWAY / DOCKER / LINUX
+         * ============================================================
          */
+
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
         /*
-         * Évite l'utilisation de l'accélération GPU
-         * dans l'environnement serveur.
+         * Désactivation du GPU.
          */
         options.addArguments("--disable-gpu");
 
         /*
-         * Taille fixe de la fenêtre.
+         * ============================================================
+         * RÉDUCTION DE LA CONSOMMATION MÉMOIRE
+         * ============================================================
+         *
+         * Chrome peut consommer beaucoup de mémoire avec certaines
+         * fonctionnalités activées par défaut.
          */
-        options.addArguments("--window-size=1280,720");
+
+        options.addArguments("--disable-extensions");
+        options.addArguments("--disable-background-networking");
+        options.addArguments("--disable-background-timer-throttling");
+        options.addArguments("--disable-backgrounding-occluded-windows");
+        options.addArguments("--disable-breakpad");
+        options.addArguments("--disable-component-extensions-with-background-pages");
+        options.addArguments("--disable-features=Translate,MediaRouter,OptimizationHints");
+        options.addArguments("--disable-hang-monitor");
+        options.addArguments("--disable-ipc-flooding-protection");
+        options.addArguments("--disable-renderer-backgrounding");
 
         /*
-         * Évite le premier lancement/configuration
-         * inutile de Chrome.
+         * Pas de notifications ou de vérifications inutiles.
          */
+        options.addArguments("--disable-notifications");
         options.addArguments("--no-first-run");
         options.addArguments("--no-default-browser-check");
 
         /*
-         * Désactive uniquement quelques éléments
-         * non nécessaires au scraping.
+         * ============================================================
+         * MÉMOIRE / PROCESSUS
+         * ============================================================
+         *
+         * Chrome utilise normalement plusieurs processus.
+         * Cette option limite certaines séparations de processus.
+         *
+         * On évite volontairement des paramètres agressifs qui
+         * pourraient provoquer des problèmes avec Flashscore.
          */
-        options.addArguments("--disable-extensions");
-        options.addArguments("--disable-notifications");
+        options.addArguments("--renderer-process-limit=2");
 
         /*
-         * Autorisation de communication Selenium/ChromeDriver.
+         * ============================================================
+         * FENÊTRE
+         * ============================================================
          */
+
+        options.addArguments("--window-size=1280,720");
+
+        /*
+         * ============================================================
+         * SELENIUM / CHROMEDRIVER
+         * ============================================================
+         */
+
         options.addArguments("--remote-allow-origins=*");
 
         /*
-         * User-Agent classique Chrome/Linux.
+         * ============================================================
+         * USER-AGENT
+         * ============================================================
          */
+
         options.addArguments(
                 "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/152.0.0.0 Safari/537.36"
         );
+
+        /*
+         * ============================================================
+         * CRÉATION DU NAVIGATEUR
+         * ============================================================
+         */
 
         return new ChromeDriver(options);
     }
