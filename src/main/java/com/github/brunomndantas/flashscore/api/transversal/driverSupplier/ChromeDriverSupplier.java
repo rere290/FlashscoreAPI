@@ -1,9 +1,10 @@
 package com.github.brunomndantas.flashscore.api.transversal.driverSupplier;
 
-import com.github.brunomndantas.jscrapper.Utils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+
+import java.io.File;
 
 public class ChromeDriverSupplier implements IDriverSupplier {
 
@@ -29,17 +30,19 @@ public class ChromeDriverSupplier implements IDriverSupplier {
             ChromeOptions options = new ChromeOptions();
 
             /*
-             * Utilise le ChromeDriver fourni par Railway
-             * uniquement si un chemin est configuré.
+             * Si un chemin ChromeDriver est configuré,
+             * on l'utilise directement.
              */
             if (this.driverPath != null
                     && !this.driverPath.trim().isEmpty()) {
 
-                String path = Utils.getAbsolutePath(this.driverPath);
+                File driverFile = new File(this.driverPath);
+
+                String absolutePath = driverFile.getAbsolutePath();
 
                 System.setProperty(
                         "webdriver.chrome.driver",
-                        path
+                        absolutePath
                 );
             }
 
@@ -76,7 +79,7 @@ public class ChromeDriverSupplier implements IDriverSupplier {
             options.addArguments("--disable-notifications");
 
             /*
-             * Communication Selenium / ChromeDriver.
+             * Autorise la communication Selenium / ChromeDriver.
              */
             options.addArguments("--remote-allow-origins=*");
 
