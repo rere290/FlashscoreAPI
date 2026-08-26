@@ -16,17 +16,14 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
     protected IDriverSupplier sourceSupplier;
 
-
     public FlashscoreDriverSupplier(IDriverSupplier sourceSupplier) {
         this.sourceSupplier = sourceSupplier;
     }
 
-
     @Override
     public WebDriver get() throws DriverSupplierException {
-        WebDriver driver = sourceSupplier.get();
 
-        driver.manage().window().maximize();
+        WebDriver driver = sourceSupplier.get();
 
         driver.get(FlashscoreURLs.FLASHSCORE_URL);
 
@@ -36,12 +33,26 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
     }
 
     protected void acceptTerms(WebDriver driver) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofMillis(Config.MEDIUM_WAIT).getSeconds());
 
-        WebElement acceptTermsButton = wait.until(ExpectedConditions.visibilityOfElementLocated(FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR));
+        WebDriverWait wait = new WebDriverWait(
+                driver,
+                Duration.ofMillis(Config.MEDIUM_WAIT).getSeconds()
+        );
+
+        WebElement acceptTermsButton = wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
+                )
+        );
+
         acceptTermsButton.click();
 
-        wait.until(ExpectedConditions.not(ExpectedConditions.visibilityOfElementLocated(FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR)));
+        wait.until(
+                ExpectedConditions.not(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
+                        )
+                )
+        );
     }
-
 }
