@@ -19,10 +19,12 @@ repositories {
 
 dependencies {
 
+	// SPRING BOOT
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+	// TEST
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -40,13 +42,13 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok:1.18.36'
 
 	// TPL4J
-	implementation group: 'com.github.brunomndantas', name: 'tpl4j', version: '1.2.1'
+	implementation 'com.github.brunomndantas:tpl4j:1.2.1'
 
 	// Repository4J
-	implementation group: 'com.github.brunomndantas', name: 'repository4j', version: '1.0.0'
+	implementation 'com.github.brunomndantas:repository4j:1.0.0'
 
 	// JScrapper
-	implementation group: 'com.github.brunomndantas', name: 'jscrapper', version: '1.1.1'
+	implementation 'com.github.brunomndantas:jscrapper:1.1.1'
 
 	// COMMONS IO
 	implementation 'commons-io:commons-io:2.11.0'
@@ -62,13 +64,33 @@ dependencies {
 	implementation 'jakarta.el:jakarta.el-api:5.0.1'
 
 	// SELENIUM
-	implementation 'org.seleniumhq.selenium:selenium-java:4.47.0'
+	implementation('org.seleniumhq.selenium:selenium-java:4.47.0') {
+		force = true
+	}
 
 	// SWAGGER
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
 	// API COMMON
 	implementation 'com.google.api:api-common:2.14.1'
+}
+
+// ======================================================
+// FORCE SELENIUM 4.47.0
+// Empêche une autre dépendance de ramener Selenium 4.14.1
+// ======================================================
+
+configurations.configureEach {
+	resolutionStrategy {
+		force 'org.seleniumhq.selenium:selenium-java:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-api:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-chrome-driver:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-chromium-driver:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-remote-driver:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-manager:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-support:4.47.0'
+		force 'org.seleniumhq.selenium:selenium-devtools-v131:4.47.0'
+	}
 }
 
 tasks.named('test') {
