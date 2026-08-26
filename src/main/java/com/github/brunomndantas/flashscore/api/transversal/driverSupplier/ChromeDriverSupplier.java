@@ -34,7 +34,7 @@ public class ChromeDriverSupplier extends DriverSupplier {
         );
 
         /*
-         * Configuration adaptée à un serveur Linux / conteneur.
+         * Configuration spéciale pour Linux / Docker / Render.
          */
         if (this.headless) {
             options.addArguments("--headless=new");
@@ -43,26 +43,54 @@ public class ChromeDriverSupplier extends DriverSupplier {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
-        options.addArguments("--disable-software-rasterizer");
 
+        /*
+         * Réduit fortement l'utilisation mémoire de Chrome.
+         */
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-background-networking");
         options.addArguments("--disable-background-timer-throttling");
         options.addArguments("--disable-backgrounding-occluded-windows");
+        options.addArguments("--disable-breakpad");
+        options.addArguments("--disable-component-extensions-with-background-pages");
+        options.addArguments("--disable-features=Translate,BackForwardCache");
+        options.addArguments("--disable-hang-monitor");
+        options.addArguments("--disable-ipc-flooding-protection");
         options.addArguments("--disable-renderer-backgrounding");
 
-        options.addArguments("--no-first-run");
-        options.addArguments("--no-default-browser-check");
-        options.addArguments("--disable-popup-blocking");
+        /*
+         * Évite certaines erreurs liées au sandbox / GPU
+         * dans les environnements conteneurisés.
+         */
+        options.addArguments("--disable-software-rasterizer");
+        options.addArguments("--disable-setuid-sandbox");
 
+        /*
+         * Taille de fenêtre fixe.
+         * On évite maximize() dans un conteneur Linux.
+         */
         options.addArguments("--window-size=1920,1080");
 
+        /*
+         * Permet à Chrome de fonctionner correctement
+         * derrière un serveur distant.
+         */
         options.addArguments("--remote-allow-origins=*");
 
         /*
-         * Réduit la consommation mémoire de Chrome.
+         * Évite que Chrome attende inutilement certaines
+         * fonctions réseau.
          */
-        options.addArguments("--disable-features=Translate,BackForwardCache");
+        options.addArguments("--disable-features=NetworkServiceInProcess");
+
+        /*
+         * User-Agent classique Chrome.
+         */
+        options.addArguments(
+                "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/152.0.0.0 Safari/537.36"
+        );
 
         return new ChromeDriver(options);
     }
