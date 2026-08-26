@@ -23,13 +23,15 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
     @Override
     public WebDriver get() throws DriverSupplierException {
 
-        WebDriver driver = sourceSupplier.get();
+        WebDriver driver = null;
 
         try {
 
+            driver = sourceSupplier.get();
+
             /*
-             * Ne pas utiliser maximize() dans Docker/Render.
-             * La taille est définie dans ChromeDriverSupplier.
+             * NE PAS utiliser maximize() sur Railway/Linux headless.
+             * La taille est déjà définie dans ChromeDriverSupplier.
              */
 
             driver.get(FlashscoreURLs.FLASHSCORE_URL);
@@ -38,14 +40,23 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
             return driver;
 
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
 
-            try {
-                driver.quit();
-            } catch (Exception ignored) {
+            /*
+             * Si Chrome plante pendant l'initialisation,
+             * on ferme proprement le driver.
+             */
+            if (driver != null) {
+                try {
+                    driver.quit();
+                } catch (Exception ignored) {
+                }
             }
 
-            throw e;
+            throw new DriverSupplierException(
+                    "Error initializing Flashscore driver!",
+                    e
+            );
         }
     }
 
@@ -56,11 +67,12 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
                 Duration.ofMillis(Config.MEDIUM_WAIT).getSeconds()
         );
 
-        WebElement acceptTermsButton = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
-                )
-        );
+        WebElement acceptTermsButton =
+                wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
+                        )
+                );
 
         acceptTermsButton.click();
 
