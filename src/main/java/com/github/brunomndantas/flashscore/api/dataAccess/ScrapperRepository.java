@@ -112,7 +112,7 @@ public abstract class ScrapperRepository<K, E> implements IRepository<K, E> {
 
         WebDriverWait wait = new WebDriverWait(
                 driver,
-                Duration.ofMillis(Config.MEDIUM_WAIT).getSeconds()
+                Duration.ofMillis(Config.MEDIUM_WAIT)
         );
 
         ExpectedCondition<Boolean> condition = ExpectedConditions.or(
