@@ -4,7 +4,7 @@ import com.github.brunomndantas.flashscore.api.transversal.driverPool.DriverPool
 import com.github.brunomndantas.flashscore.api.transversal.driverPool.IDriverPool;
 import com.github.brunomndantas.flashscore.api.transversal.driverSupplier.ChromeDriverSupplier;
 import com.github.brunomndantas.flashscore.api.transversal.driverSupplier.FlashscoreDriverSupplier;
-import com.github.brunomndantas.jscrapper.core.driverSupplier.IDriverSupplier;
+import com.github.brunomndantas.flashscore.api.transversal.driverSupplier.IDriverSupplier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,17 +24,25 @@ public class DriverConfig {
     @Value("${maxdrivers}")
     protected int maxDrivers;
 
-
     @Bean
     public IDriverSupplier getDriverSupplier() {
-        IDriverSupplier sourceSupplier = new ChromeDriverSupplier(driverPath, driverSilent, driverHeadless);
+
+        IDriverSupplier sourceSupplier =
+                new ChromeDriverSupplier(
+                        driverPath,
+                        driverSilent,
+                        driverHeadless
+                );
+
         return new FlashscoreDriverSupplier(sourceSupplier);
     }
 
     @Bean
     public IDriverPool getDriverPool(IDriverSupplier driverSupplier) {
-        return new DriverPool(driverSupplier, maxDrivers);
+
+        return new DriverPool(
+                driverSupplier,
+                maxDrivers
+        );
     }
-
-
 }
