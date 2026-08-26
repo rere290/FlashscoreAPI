@@ -1,12 +1,11 @@
 package com.github.brunomndantas.flashscore.api.transversal.driverSupplier;
 
 import com.github.brunomndantas.jscrapper.Utils;
-import com.github.brunomndantas.jscrapper.support.driverSupplier.DriverSupplier;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-public class ChromeDriverSupplier extends DriverSupplier {
+public class ChromeDriverSupplier implements IDriverSupplier {
 
     protected boolean headless;
     protected boolean silent;
@@ -23,136 +22,81 @@ public class ChromeDriverSupplier extends DriverSupplier {
     }
 
     @Override
-    public WebDriver getDriver() throws Exception {
+    public WebDriver get() throws DriverSupplierException {
 
-        ChromeOptions options = new ChromeOptions();
+        try {
 
-        /*
-         * ============================================================
-         * CHROMEDRIVER
-         * ============================================================
-         *
-         * On utilise le chemin fourni par la configuration uniquement
-         * lorsqu'il existe réellement.
-         *
-         * Sur Railway, ChromeDriver peut déjà être disponible dans
-         * l'environnement.
-         */
-        if (this.driverPath != null
-                && !this.driverPath.trim().isEmpty()) {
+            ChromeOptions options = new ChromeOptions();
 
-            String path = Utils.getAbsolutePath(this.driverPath);
+            /*
+             * Utilise le ChromeDriver fourni par Railway
+             * uniquement si un chemin est configuré.
+             */
+            if (this.driverPath != null
+                    && !this.driverPath.trim().isEmpty()) {
+
+                String path = Utils.getAbsolutePath(this.driverPath);
+
+                System.setProperty(
+                        "webdriver.chrome.driver",
+                        path
+                );
+            }
 
             System.setProperty(
-                    "webdriver.chrome.driver",
-                    path
+                    "webdriver.chrome.silentOutput",
+                    Boolean.toString(this.silent)
+            );
+
+            /*
+             * Headless pour Railway/Linux.
+             */
+            if (this.headless) {
+                options.addArguments("--headless=new");
+            }
+
+            /*
+             * Options nécessaires pour Docker/Railway.
+             */
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--disable-gpu");
+
+            /*
+             * Taille de la fenêtre.
+             */
+            options.addArguments("--window-size=1280,720");
+
+            /*
+             * Réduit les processus inutiles de Chrome.
+             */
+            options.addArguments("--no-first-run");
+            options.addArguments("--no-default-browser-check");
+            options.addArguments("--disable-extensions");
+            options.addArguments("--disable-notifications");
+
+            /*
+             * Communication Selenium / ChromeDriver.
+             */
+            options.addArguments("--remote-allow-origins=*");
+
+            /*
+             * User-Agent Chrome/Linux.
+             */
+            options.addArguments(
+                    "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                    "Chrome/152.0.0.0 Safari/537.36"
+            );
+
+            return new ChromeDriver(options);
+
+        } catch (Exception e) {
+
+            throw new DriverSupplierException(
+                    "Error creating ChromeDriver!",
+                    e
             );
         }
-
-        System.setProperty(
-                "webdriver.chrome.silentOutput",
-                Boolean.toString(this.silent)
-        );
-
-        /*
-         * ============================================================
-         * MODE HEADLESS
-         * ============================================================
-         *
-         * Railway fonctionne sans interface graphique.
-         */
-        if (this.headless) {
-            options.addArguments("--headless=new");
-        }
-
-        /*
-         * ============================================================
-         * RAILWAY / DOCKER / LINUX
-         * ============================================================
-         */
-
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-
-        /*
-         * Désactivation du GPU.
-         */
-        options.addArguments("--disable-gpu");
-
-        /*
-         * ============================================================
-         * RÉDUCTION DE LA CONSOMMATION MÉMOIRE
-         * ============================================================
-         *
-         * Chrome peut consommer beaucoup de mémoire avec certaines
-         * fonctionnalités activées par défaut.
-         */
-
-        options.addArguments("--disable-extensions");
-        options.addArguments("--disable-background-networking");
-        options.addArguments("--disable-background-timer-throttling");
-        options.addArguments("--disable-backgrounding-occluded-windows");
-        options.addArguments("--disable-breakpad");
-        options.addArguments("--disable-component-extensions-with-background-pages");
-        options.addArguments("--disable-features=Translate,MediaRouter,OptimizationHints");
-        options.addArguments("--disable-hang-monitor");
-        options.addArguments("--disable-ipc-flooding-protection");
-        options.addArguments("--disable-renderer-backgrounding");
-
-        /*
-         * Pas de notifications ou de vérifications inutiles.
-         */
-        options.addArguments("--disable-notifications");
-        options.addArguments("--no-first-run");
-        options.addArguments("--no-default-browser-check");
-
-        /*
-         * ============================================================
-         * MÉMOIRE / PROCESSUS
-         * ============================================================
-         *
-         * Chrome utilise normalement plusieurs processus.
-         * Cette option limite certaines séparations de processus.
-         *
-         * On évite volontairement des paramètres agressifs qui
-         * pourraient provoquer des problèmes avec Flashscore.
-         */
-        options.addArguments("--renderer-process-limit=2");
-
-        /*
-         * ============================================================
-         * FENÊTRE
-         * ============================================================
-         */
-
-        options.addArguments("--window-size=1280,720");
-
-        /*
-         * ============================================================
-         * SELENIUM / CHROMEDRIVER
-         * ============================================================
-         */
-
-        options.addArguments("--remote-allow-origins=*");
-
-        /*
-         * ============================================================
-         * USER-AGENT
-         * ============================================================
-         */
-
-        options.addArguments(
-                "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
-                "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                "Chrome/152.0.0.0 Safari/537.36"
-        );
-
-        /*
-         * ============================================================
-         * CRÉATION DU NAVIGATEUR
-         * ============================================================
-         */
-
-        return new ChromeDriver(options);
     }
 }
