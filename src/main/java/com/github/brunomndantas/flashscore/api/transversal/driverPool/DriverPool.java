@@ -1,7 +1,7 @@
 package com.github.brunomndantas.flashscore.api.transversal.driverPool;
 
-import com.github.brunomndantas.jscrapper.core.driverSupplier.DriverSupplierException;
-import com.github.brunomndantas.jscrapper.core.driverSupplier.IDriverSupplier;
+import com.github.brunomndantas.flashscore.api.transversal.driverSupplier.DriverSupplierException;
+import com.github.brunomndantas.flashscore.api.transversal.driverSupplier.IDriverSupplier;
 import org.openqa.selenium.WebDriver;
 
 import java.util.Collection;
@@ -32,7 +32,7 @@ public class DriverPool implements IDriverPool {
             while (true) {
 
                 if (closed) {
-                    throw new DriverPoolException("Driver is closed!");
+                    throw new DriverPoolException("Driver pool is closed!");
                 }
 
                 /*
@@ -72,6 +72,12 @@ public class DriverPool implements IDriverPool {
         try {
 
             WebDriver driver = driverSupplier.get();
+
+            if (driver == null) {
+                throw new DriverPoolException(
+                        "Driver supplier returned a null driver!"
+                );
+            }
 
             drivers.add(driver);
 
@@ -154,6 +160,8 @@ public class DriverPool implements IDriverPool {
 
                 drivers.remove(driver);
 
+                lock.notifyAll();
+
                 return;
             }
 
@@ -188,6 +196,10 @@ public class DriverPool implements IDriverPool {
      * Supprime complètement un driver cassé.
      */
     private void removeDriver(WebDriver driver) {
+
+        if (driver == null) {
+            return;
+        }
 
         freeDrivers.remove(driver);
         drivers.remove(driver);
