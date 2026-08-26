@@ -33,28 +33,16 @@ public class ChromeDriverSupplier extends DriverSupplier {
                 Boolean.toString(this.silent)
         );
 
-        /*
-         * IMPORTANT POUR RAILWAY
-         */
+        // Railway / Docker
         if (this.headless) {
             options.addArguments("--headless=new");
         }
 
-        /*
-         * Évite maximize() dans un environnement Linux sans interface graphique.
-         */
-        options.addArguments("--window-size=1920,1080");
-
-        /*
-         * Stabilité Docker / Railway
-         */
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
 
-        /*
-         * Réduit fortement ce que Chrome charge inutilement.
-         */
+        // Réduit la consommation mémoire
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-background-networking");
         options.addArguments("--disable-background-timer-throttling");
@@ -62,33 +50,28 @@ public class ChromeDriverSupplier extends DriverSupplier {
         options.addArguments("--disable-breakpad");
         options.addArguments("--disable-component-update");
         options.addArguments("--disable-default-apps");
-        options.addArguments("--disable-features=Translate,MediaRouter");
         options.addArguments("--disable-hang-monitor");
         options.addArguments("--disable-popup-blocking");
-        options.addArguments("--disable-prompt-on-repost");
         options.addArguments("--disable-sync");
-        options.addArguments("--metrics-recording-only");
+        options.addArguments("--disable-notifications");
+
+        // Évite certaines fonctions inutiles
+        options.addArguments("--disable-software-rasterizer");
         options.addArguments("--no-first-run");
         options.addArguments("--no-default-browser-check");
 
-        /*
-         * Flashscore n'a pas besoin de notifications.
-         */
-        options.addArguments("--disable-notifications");
+        // Taille fixe
+        options.addArguments("--window-size=1280,720");
 
-        /*
-         * Évite certaines consommations mémoire inutiles.
-         */
-        options.addArguments("--disable-software-rasterizer");
-
-        /*
-         * Autorisation Selenium / ChromeDriver.
-         */
+        // Autorisation Selenium / ChromeDriver
         options.addArguments("--remote-allow-origins=*");
 
-        /*
-         * User agent classique.
-         */
+        // Réduction supplémentaire de la consommation mémoire
+        options.addArguments("--disable-features=Translate,MediaRouter,BackForwardCache");
+        options.addArguments("--disable-renderer-backgrounding");
+        options.addArguments("--disable-ipc-flooding-protection");
+
+        // User-Agent
         options.addArguments(
                 "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
                 "AppleWebKit/537.36 (KHTML, like Gecko) " +
