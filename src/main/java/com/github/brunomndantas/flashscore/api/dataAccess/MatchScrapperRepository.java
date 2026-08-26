@@ -293,7 +293,7 @@ public class MatchScrapperRepository extends ScrapperRepository<MatchKey, Match>
             String url = FlashscoreURLs.getMatchPlayersURL(matchKey);
             driver.get(url);
 
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofMillis(Config.MEDIUM_WAIT).getSeconds());
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofMillis(Config.MEDIUM_WAIT)
             ExpectedCondition<WebElement> condition = ExpectedConditions.presenceOfElementLocated(FlashscoreSelectors.MATCH_HOME_LINEUP_SELECTOR);
             wait.until(condition);
         } else {
