@@ -30,8 +30,7 @@ public class ChromeDriverSupplier implements IDriverSupplier {
             ChromeOptions options = new ChromeOptions();
 
             /*
-             * Utilisation du ChromeDriver configuré
-             * dans driver.path s'il existe.
+             * ChromeDriver personnalisé si un chemin est fourni.
              */
             if (this.driverPath != null
                     && !this.driverPath.trim().isEmpty()) {
@@ -55,33 +54,28 @@ public class ChromeDriverSupplier implements IDriverSupplier {
             );
 
             /*
-             * Mode headless pour Railway / Docker / Linux.
+             * Headless obligatoire sur Railway/Linux.
              */
             if (this.headless) {
                 options.addArguments("--headless=new");
             }
 
             /*
-             * IMPORTANT POUR RAILWAY / DOCKER
+             * Options Docker / Railway.
              */
             options.addArguments("--no-sandbox");
             options.addArguments("--disable-setuid-sandbox");
             options.addArguments("--disable-dev-shm-usage");
 
             /*
-             * Réduit l'utilisation de ressources.
+             * Réduit la consommation de ressources.
              */
             options.addArguments("--disable-gpu");
-            options.addArguments("--disable-software-rasterizer");
             options.addArguments("--disable-extensions");
-            options.addArguments("--disable-background-networking");
-            options.addArguments("--disable-background-timer-throttling");
-            options.addArguments("--disable-backgrounding-occluded-windows");
-            options.addArguments("--disable-renderer-backgrounding");
 
             /*
-             * Évite certaines fonctions Chrome
-             * inutiles sur un serveur.
+             * Empêche Chrome de lancer certaines fonctions
+             * inutiles pour le scraping.
              */
             options.addArguments("--no-first-run");
             options.addArguments("--no-default-browser-check");
@@ -89,21 +83,27 @@ public class ChromeDriverSupplier implements IDriverSupplier {
             options.addArguments("--disable-popup-blocking");
 
             /*
-             * Taille fixe pour le scraping.
+             * Désactive l'accélération graphique sans
+             * désactiver complètement le moteur de rendu.
              */
-            options.addArguments("--window-size=1280,720");
+            options.addArguments("--disable-software-rasterizer");
 
             /*
-             * Évite certains problèmes liés à la mémoire
-             * graphique dans les conteneurs Linux.
+             * Taille du navigateur.
              */
-            options.addArguments("--disable-features=UseOzonePlatform");
-            options.addArguments("--disable-features=VizDisplayCompositor");
+            options.addArguments("--window-size=1280,720");
 
             /*
              * Communication Selenium / ChromeDriver.
              */
             options.addArguments("--remote-allow-origins=*");
+
+            /*
+             * Réduit certains processus Chrome en arrière-plan.
+             */
+            options.addArguments("--disable-background-networking");
+            options.addArguments("--disable-background-timer-throttling");
+            options.addArguments("--disable-renderer-backgrounding");
 
             /*
              * User-Agent.
@@ -115,7 +115,7 @@ public class ChromeDriverSupplier implements IDriverSupplier {
             );
 
             /*
-             * Création du navigateur.
+             * Création de Chrome.
              */
             return new ChromeDriver(options);
 
