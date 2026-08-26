@@ -14,7 +14,7 @@ COPY src src
 RUN chmod +x gradlew
 
 # Build the Spring Boot application
-RUN ./gradlew clean bootJar -x test
+RUN ./gradlew clean dependencyInsight --dependency selenium-remote-driver --configuration runtimeClasspath && ./gradlew bootJar -x test
 
 # --- STAGE 2: Runtime ---
 FROM eclipse-temurin:17-jre
