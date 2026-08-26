@@ -6,8 +6,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import java.util.Map;
-
 public class ChromeDriverSupplier extends DriverSupplier {
 
     protected boolean headless;
@@ -30,11 +28,11 @@ public class ChromeDriverSupplier extends DriverSupplier {
         ChromeOptions options = new ChromeOptions();
 
         /*
-         * Chemin ChromeDriver.
-         * Sur Railway, DRIVER_PATH peut être fourni
-         * par une variable d'environnement.
+         * Utilise le ChromeDriver fourni/configuré.
+         * Sur Railway, driver.path peut être vide ou configuré
+         * par la variable d'environnement.
          */
-        if (this.driverPath != null && !this.driverPath.isBlank()) {
+        if (this.driverPath != null && !this.driverPath.trim().isEmpty()) {
 
             String path = Utils.getAbsolutePath(this.driverPath);
 
@@ -50,57 +48,68 @@ public class ChromeDriverSupplier extends DriverSupplier {
         );
 
         /*
-         * ==============================
-         * RAILWAY / DOCKER / LINUX
-         * ==============================
+         * Railway / Linux :
+         * Chrome doit fonctionner en mode headless.
          */
-
         if (this.headless) {
             options.addArguments("--headless=new");
         }
 
+        /*
+         * Options indispensables pour un environnement Docker/Railway.
+         */
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+
+        /*
+         * Évite l'utilisation de l'accélération graphique
+         * qui n'est pas nécessaire sur Railway.
+         */
+        options.addArguments("--disable-gpu");
+
+        /*
+         * Taille de fenêtre fixe.
+         */
+        options.addArguments("--window-size=1280,720");
+
+        /*
+         * Évite certaines fenêtres/notifications inutiles.
+         */
+        options.addArguments("--disable-notifications");
+        options.addArguments("--disable-popup-blocking");
+        options.addArguments("--disable-extensions");
+
+        /*
+         * Évite le premier lancement et certaines vérifications
+         * inutiles de Chrome.
+         */
+        options.addArguments("--no-first-run");
+        options.addArguments("--no-default-browser-check");
+
+        /*
+         * Autorise ChromeDriver/Selenium dans cet environnement.
+         */
+        options.addArguments("--remote-allow-origins=*");
+
+        /*
+         * User-Agent normal de Chrome Linux.
+         */
         options.addArguments(
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-                "--disable-extensions",
-                "--disable-background-networking",
-                "--disable-background-timer-throttling",
-                "--disable-backgrounding-occluded-windows",
-                "--disable-breakpad",
-                "--disable-component-update",
-                "--disable-default-apps",
-                "--disable-hang-monitor",
-                "--disable-popup-blocking",
-                "--disable-sync",
-                "--disable-notifications",
-                "--disable-software-rasterizer",
-                "--disable-features=Translate,MediaRouter,BackForwardCache,AudioServiceOutOfProcess",
-                "--disable-renderer-backgrounding",
-                "--disable-component-extensions-with-background-pages",
-                "--disable-client-side-phishing-detection",
-                "--disable-domain-reliability",
-                "--no-first-run",
-                "--no-default-browser-check",
-                "--window-size=1280,720",
-                "--remote-allow-origins=*",
                 "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
-                        "AppleWebKit/537.36 (KHTML, like Gecko) " +
-                        "Chrome/152.0.0.0 Safari/537.36"
+                "AppleWebKit/537.36 (KHTML, like Gecko) " +
+                "Chrome/152.0.0.0 Safari/537.36"
         );
 
         /*
-         * Préférences Chrome.
+         * Réduit légèrement la consommation mémoire
+         * sans désactiver massivement des composants Chrome.
          */
-        options.setExperimentalOption(
-                "prefs",
-                Map.of(
-                        "profile.default_content_setting_values.notifications", 2,
-                        "credentials_enable_service", false,
-                        "profile.password_manager_enabled", false
-                )
-        );
+        options.addArguments("--disable-background-networking");
+        options.addArguments("--disable-sync");
 
+        /*
+         * Création du navigateur.
+         */
         return new ChromeDriver(options);
     }
 }
