@@ -25,11 +25,28 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
         WebDriver driver = sourceSupplier.get();
 
-        driver.get(FlashscoreURLs.FLASHSCORE_URL);
+        try {
 
-        acceptTerms(driver);
+            /*
+             * Ne pas utiliser maximize() dans Docker/Render.
+             * La taille est définie dans ChromeDriverSupplier.
+             */
 
-        return driver;
+            driver.get(FlashscoreURLs.FLASHSCORE_URL);
+
+            acceptTerms(driver);
+
+            return driver;
+
+        } catch (RuntimeException e) {
+
+            try {
+                driver.quit();
+            } catch (Exception ignored) {
+            }
+
+            throw e;
+        }
     }
 
     protected void acceptTerms(WebDriver driver) {
