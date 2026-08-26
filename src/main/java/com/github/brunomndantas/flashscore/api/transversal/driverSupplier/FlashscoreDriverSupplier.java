@@ -3,8 +3,6 @@ package com.github.brunomndantas.flashscore.api.transversal.driverSupplier;
 import com.github.brunomndantas.flashscore.api.dataAccess.utils.FlashscoreSelectors;
 import com.github.brunomndantas.flashscore.api.dataAccess.utils.FlashscoreURLs;
 import com.github.brunomndantas.flashscore.api.transversal.Config;
-import com.github.brunomndantas.jscrapper.core.driverSupplier.DriverSupplierException;
-import com.github.brunomndantas.jscrapper.core.driverSupplier.IDriverSupplier;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -30,8 +28,7 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
             driver = sourceSupplier.get();
 
             /*
-             * NE PAS utiliser maximize() sur Railway/Linux headless.
-             * La taille est déjà définie dans ChromeDriverSupplier.
+             * Pas de maximize() sur Railway/Linux headless.
              */
 
             driver.get(FlashscoreURLs.FLASHSCORE_URL);
@@ -44,7 +41,7 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
             /*
              * Si Chrome plante pendant l'initialisation,
-             * on ferme proprement le driver.
+             * on ferme proprement le navigateur.
              */
             if (driver != null) {
                 try {
@@ -64,7 +61,7 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
         WebDriverWait wait = new WebDriverWait(
                 driver,
-                Duration.ofMillis(Config.MEDIUM_WAIT).getSeconds()
+                Duration.ofMillis(Config.MEDIUM_WAIT)
         );
 
         WebElement acceptTermsButton =
@@ -77,10 +74,8 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
         acceptTermsButton.click();
 
         wait.until(
-                ExpectedConditions.not(
-                        ExpectedConditions.visibilityOfElementLocated(
-                                FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
-                        )
+                ExpectedConditions.invisibilityOfElementLocated(
+                        FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
                 )
         );
     }
