@@ -28,11 +28,13 @@ public class ChromeDriverSupplier extends DriverSupplier {
         ChromeOptions options = new ChromeOptions();
 
         /*
-         * Utilise le ChromeDriver fourni/configuré.
-         * Sur Railway, driver.path peut être vide ou configuré
-         * par la variable d'environnement.
+         * Sur Railway, le ChromeDriver est généralement
+         * déjà disponible dans l'environnement.
+         *
+         * On utilise driver.path uniquement s'il est réellement fourni.
          */
-        if (this.driverPath != null && !this.driverPath.trim().isEmpty()) {
+        if (this.driverPath != null
+                && !this.driverPath.trim().isEmpty()) {
 
             String path = Utils.getAbsolutePath(this.driverPath);
 
@@ -48,51 +50,51 @@ public class ChromeDriverSupplier extends DriverSupplier {
         );
 
         /*
-         * Railway / Linux :
-         * Chrome doit fonctionner en mode headless.
+         * Headless obligatoire sur Railway/Linux.
          */
         if (this.headless) {
             options.addArguments("--headless=new");
         }
 
         /*
-         * Options indispensables pour un environnement Docker/Railway.
+         * Options indispensables pour un environnement
+         * Linux/Docker/Railway.
          */
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
         /*
-         * Évite l'utilisation de l'accélération graphique
-         * qui n'est pas nécessaire sur Railway.
+         * Évite l'utilisation de l'accélération GPU
+         * dans l'environnement serveur.
          */
         options.addArguments("--disable-gpu");
 
         /*
-         * Taille de fenêtre fixe.
+         * Taille fixe de la fenêtre.
          */
         options.addArguments("--window-size=1280,720");
 
         /*
-         * Évite certaines fenêtres/notifications inutiles.
-         */
-        options.addArguments("--disable-notifications");
-        options.addArguments("--disable-popup-blocking");
-        options.addArguments("--disable-extensions");
-
-        /*
-         * Évite le premier lancement et certaines vérifications
-         * inutiles de Chrome.
+         * Évite le premier lancement/configuration
+         * inutile de Chrome.
          */
         options.addArguments("--no-first-run");
         options.addArguments("--no-default-browser-check");
 
         /*
-         * Autorise ChromeDriver/Selenium dans cet environnement.
+         * Désactive uniquement quelques éléments
+         * non nécessaires au scraping.
+         */
+        options.addArguments("--disable-extensions");
+        options.addArguments("--disable-notifications");
+
+        /*
+         * Autorisation de communication Selenium/ChromeDriver.
          */
         options.addArguments("--remote-allow-origins=*");
 
         /*
-         * User-Agent normal de Chrome Linux.
+         * User-Agent classique Chrome/Linux.
          */
         options.addArguments(
                 "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
@@ -100,16 +102,6 @@ public class ChromeDriverSupplier extends DriverSupplier {
                 "Chrome/152.0.0.0 Safari/537.36"
         );
 
-        /*
-         * Réduit légèrement la consommation mémoire
-         * sans désactiver massivement des composants Chrome.
-         */
-        options.addArguments("--disable-background-networking");
-        options.addArguments("--disable-sync");
-
-        /*
-         * Création du navigateur.
-         */
         return new ChromeDriver(options);
     }
 }
