@@ -25,56 +25,24 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
         try {
 
-            /*
-             * Création de ChromeDriver.
-             */
             driver = sourceSupplier.get();
 
             /*
-             * Timeout de chargement raisonnable pour Railway.
+             * Pas de maximize() sur Railway/Linux headless.
              */
-            driver.manage().timeouts().pageLoadTimeout(
-                    Duration.ofSeconds(60)
-            );
 
-            /*
-             * Ouverture de Flashscore.
-             */
             driver.get(FlashscoreURLs.FLASHSCORE_URL);
 
             /*
-             * Petit délai pour laisser Flashscore initialiser
-             * son interface JavaScript.
+             * Le bandeau de consentement peut être absent.
+             * Dans ce cas on continue normalement.
              */
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            /*
-             * Les conditions/cookies ne doivent PAS faire
-             * échouer complètement le démarrage si le bouton
-             * n'est pas présent.
-             */
-            try {
-                acceptTerms(driver);
-            } catch (Exception ignored) {
-                /*
-                 * Flashscore peut parfois ne pas afficher
-                 * le bouton ou l'avoir déjà accepté.
-                 *
-                 * On continue donc normalement.
-                 */
-            }
+            acceptTerms(driver);
 
             return driver;
 
         } catch (Exception e) {
 
-            /*
-             * Fermeture propre de Chrome en cas d'erreur.
-             */
             if (driver != null) {
                 try {
                     driver.quit();
@@ -91,51 +59,50 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
     protected void acceptTerms(WebDriver driver) {
 
-        WebDriverWait wait = new WebDriverWait(
-                driver,
-                Duration.ofMillis(Config.MEDIUM_WAIT)
-        );
+        try {
 
-        WebElement acceptTermsButton =
+            WebDriverWait wait = new WebDriverWait(
+                    driver,
+                    Duration.ofSeconds(10)
+            );
+
+            WebElement acceptTermsButton =
+                    wait.until(
+                            ExpectedConditions.elementToBeClickable(
+                                    FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
+                            )
+                    );
+
+            acceptTermsButton.click();
+
+            /*
+             * Petite attente pour laisser disparaître
+             * le bandeau.
+             */
+            try {
+
                 wait.until(
-                        ExpectedConditions.elementToBeClickable(
+                        ExpectedConditions.invisibilityOfElementLocated(
                                 FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
                         )
                 );
 
-        try {
-            acceptTermsButton.click();
-        } catch (Exception e) {
-            /*
-             * Si le clic classique ne fonctionne pas,
-             * on tente un clic JavaScript.
-             */
-            try {
-                org.openqa.selenium.JavascriptExecutor javascript =
-                        (org.openqa.selenium.JavascriptExecutor) driver;
-
-                javascript.executeScript(
-                        "arguments[0].click();",
-                        acceptTermsButton
-                );
             } catch (Exception ignored) {
+                /*
+                 * Le bouton peut avoir disparu immédiatement
+                 * après le clic.
+                 */
             }
-        }
 
-        /*
-         * On ne bloque pas le scraper si le bouton disparaît
-         * déjà ou si Flashscore modifie son comportement.
-         */
-        try {
-            new WebDriverWait(
-                    driver,
-                    Duration.ofSeconds(5)
-            ).until(
-                    ExpectedConditions.invisibilityOfElementLocated(
-                            FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
-                    )
-            );
         } catch (Exception ignored) {
+
+            /*
+             * Pas de bouton de consentement :
+             * on continue quand même.
+             *
+             * Flashscore peut afficher le site directement
+             * selon la session / région / cookies.
+             */
         }
     }
 }
