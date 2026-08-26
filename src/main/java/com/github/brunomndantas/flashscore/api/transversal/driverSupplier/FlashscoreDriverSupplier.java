@@ -25,23 +25,55 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
         try {
 
+            /*
+             * Création de ChromeDriver.
+             */
             driver = sourceSupplier.get();
 
             /*
-             * Pas de maximize() sur Railway/Linux headless.
+             * Timeout de chargement raisonnable pour Railway.
              */
+            driver.manage().timeouts().pageLoadTimeout(
+                    Duration.ofSeconds(60)
+            );
 
+            /*
+             * Ouverture de Flashscore.
+             */
             driver.get(FlashscoreURLs.FLASHSCORE_URL);
 
-            acceptTerms(driver);
+            /*
+             * Petit délai pour laisser Flashscore initialiser
+             * son interface JavaScript.
+             */
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            /*
+             * Les conditions/cookies ne doivent PAS faire
+             * échouer complètement le démarrage si le bouton
+             * n'est pas présent.
+             */
+            try {
+                acceptTerms(driver);
+            } catch (Exception ignored) {
+                /*
+                 * Flashscore peut parfois ne pas afficher
+                 * le bouton ou l'avoir déjà accepté.
+                 *
+                 * On continue donc normalement.
+                 */
+            }
 
             return driver;
 
         } catch (Exception e) {
 
             /*
-             * Si Chrome plante pendant l'initialisation,
-             * on ferme proprement le navigateur.
+             * Fermeture propre de Chrome en cas d'erreur.
              */
             if (driver != null) {
                 try {
@@ -66,17 +98,44 @@ public class FlashscoreDriverSupplier implements IDriverSupplier {
 
         WebElement acceptTermsButton =
                 wait.until(
-                        ExpectedConditions.visibilityOfElementLocated(
+                        ExpectedConditions.elementToBeClickable(
                                 FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
                         )
                 );
 
-        acceptTermsButton.click();
+        try {
+            acceptTermsButton.click();
+        } catch (Exception e) {
+            /*
+             * Si le clic classique ne fonctionne pas,
+             * on tente un clic JavaScript.
+             */
+            try {
+                org.openqa.selenium.JavascriptExecutor javascript =
+                        (org.openqa.selenium.JavascriptExecutor) driver;
 
-        wait.until(
-                ExpectedConditions.invisibilityOfElementLocated(
-                        FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
-                )
-        );
+                javascript.executeScript(
+                        "arguments[0].click();",
+                        acceptTermsButton
+                );
+            } catch (Exception ignored) {
+            }
+        }
+
+        /*
+         * On ne bloque pas le scraper si le bouton disparaît
+         * déjà ou si Flashscore modifie son comportement.
+         */
+        try {
+            new WebDriverWait(
+                    driver,
+                    Duration.ofSeconds(5)
+            ).until(
+                    ExpectedConditions.invisibilityOfElementLocated(
+                            FlashscoreSelectors.ACCEPT_TERMS_BUTTON_SELECTOR
+                    )
+            );
+        } catch (Exception ignored) {
+        }
     }
 }
