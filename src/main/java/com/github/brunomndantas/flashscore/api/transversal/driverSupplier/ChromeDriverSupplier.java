@@ -23,7 +23,7 @@ public class ChromeDriverSupplier extends DriverSupplier {
 
         ChromeOptions options = new ChromeOptions();
 
-        if (this.driverPath != null && !this.driverPath.isBlank()) {
+        if (this.driverPath != null) {
             String path = Utils.getAbsolutePath(this.driverPath);
             System.setProperty("webdriver.chrome.driver", path);
         }
@@ -34,57 +34,60 @@ public class ChromeDriverSupplier extends DriverSupplier {
         );
 
         /*
-         * Configuration spéciale pour Linux / Docker / Render.
+         * IMPORTANT POUR RAILWAY
          */
         if (this.headless) {
             options.addArguments("--headless=new");
         }
 
+        /*
+         * Évite maximize() dans un environnement Linux sans interface graphique.
+         */
+        options.addArguments("--window-size=1920,1080");
+
+        /*
+         * Stabilité Docker / Railway
+         */
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");
 
         /*
-         * Réduit fortement l'utilisation mémoire de Chrome.
+         * Réduit fortement ce que Chrome charge inutilement.
          */
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-background-networking");
         options.addArguments("--disable-background-timer-throttling");
         options.addArguments("--disable-backgrounding-occluded-windows");
         options.addArguments("--disable-breakpad");
-        options.addArguments("--disable-component-extensions-with-background-pages");
-        options.addArguments("--disable-features=Translate,BackForwardCache");
+        options.addArguments("--disable-component-update");
+        options.addArguments("--disable-default-apps");
+        options.addArguments("--disable-features=Translate,MediaRouter");
         options.addArguments("--disable-hang-monitor");
-        options.addArguments("--disable-ipc-flooding-protection");
-        options.addArguments("--disable-renderer-backgrounding");
+        options.addArguments("--disable-popup-blocking");
+        options.addArguments("--disable-prompt-on-repost");
+        options.addArguments("--disable-sync");
+        options.addArguments("--metrics-recording-only");
+        options.addArguments("--no-first-run");
+        options.addArguments("--no-default-browser-check");
 
         /*
-         * Évite certaines erreurs liées au sandbox / GPU
-         * dans les environnements conteneurisés.
+         * Flashscore n'a pas besoin de notifications.
+         */
+        options.addArguments("--disable-notifications");
+
+        /*
+         * Évite certaines consommations mémoire inutiles.
          */
         options.addArguments("--disable-software-rasterizer");
-        options.addArguments("--disable-setuid-sandbox");
 
         /*
-         * Taille de fenêtre fixe.
-         * On évite maximize() dans un conteneur Linux.
-         */
-        options.addArguments("--window-size=1920,1080");
-
-        /*
-         * Permet à Chrome de fonctionner correctement
-         * derrière un serveur distant.
+         * Autorisation Selenium / ChromeDriver.
          */
         options.addArguments("--remote-allow-origins=*");
 
         /*
-         * Évite que Chrome attende inutilement certaines
-         * fonctions réseau.
-         */
-        options.addArguments("--disable-features=NetworkServiceInProcess");
-
-        /*
-         * User-Agent classique Chrome.
+         * User agent classique.
          */
         options.addArguments(
                 "--user-agent=Mozilla/5.0 (X11; Linux x86_64) " +
